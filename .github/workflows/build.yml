@@ -10,7 +10,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ amd64, arm64 ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
       - name: Build the image
-        run: ./build base
+        run: ./build web-${{ matrix.arch }}
+      - name: Upload ${{ matrix.arch }} image
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-image-${{ matrix.arch }}
+          path: .build/web-${{ matrix.arch }}-trixie*.raw
+          retention-days: 2
